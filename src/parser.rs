@@ -29,7 +29,7 @@ use crate::{
 /// [`program`]: ParserReturn::program
 /// [`errors`]: ParserReturn::errors
 /// [`panicked`]: ParserReturn::panicked
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ParserReturn {
     pub program: Program,
     pub errors: Vec<Diagnostic>,

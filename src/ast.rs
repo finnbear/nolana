@@ -31,7 +31,7 @@ pub enum AstKind {
 
 /// Represents the root of a Molang expression AST, containing all the top-level
 /// information.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Program {
     pub span: Span,
     /// Determines whether the expression is complex or simple. If it contains
@@ -41,7 +41,7 @@ pub struct Program {
 }
 
 /// <https://bedrock.dev/docs/stable/Molang#Lexical%20Structure>
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Expression {
     BooleanLiteral(Box<BooleanLiteral>),
     NumericLiteral(Box<NumericLiteral>),
@@ -67,7 +67,7 @@ pub enum Expression {
 }
 
 /// `true` or `false`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BooleanLiteral {
     pub span: Span,
     pub value: bool,
@@ -85,7 +85,7 @@ impl BooleanLiteral {
 }
 
 /// `1.23` in `v.a = 1.23;`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct NumericLiteral {
     pub span: Span,
     pub value: f32,
@@ -94,21 +94,21 @@ pub struct NumericLiteral {
 /// <https://bedrock.dev/docs/stable/Molang#Strings>
 ///
 /// `'foo bar'` in `v.a = 'foo bar';`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct StringLiteral {
     pub span: Span,
     pub value: String,
 }
 
 /// `foo` in `v.foo.bar`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IdentifierReference {
     pub span: Span,
     pub name: String,
 }
 
 /// <https://bedrock.dev/docs/stable/Molang#Variables>
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct VariableExpression {
     pub span: Span,
     pub lifetime: VariableLifetime,
@@ -149,7 +149,7 @@ impl From<Kind> for VariableLifetime {
 }
 
 /// <https://bedrock.dev/docs/stable/Molang#Structs>
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum VariableMember {
     /// `foo.bar` in `v.foo.bar`
     Object {
@@ -164,7 +164,7 @@ pub enum VariableMember {
     },
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ParenthesizedExpression {
     /// `(1 + 1)` in `(1 + 1) * 2`
     Single { span: Span, expression: Expression },
@@ -176,14 +176,14 @@ pub enum ParenthesizedExpression {
 }
 
 /// `{ v.a = 0; }` in `loop(10, { v.a = 0; })`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BlockExpression {
     pub span: Span,
     pub expressions: Vec<Expression>,
 }
 
 /// `1 + 1` in `v.a = 1 + 1;`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BinaryExpression {
     pub span: Span,
     pub left: Expression,
@@ -265,7 +265,7 @@ impl From<Kind> for BinaryOperator {
 }
 
 /// `-1` in `q.foo(-1)`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UnaryExpression {
     pub span: Span,
     pub operator: UnaryOperator,
@@ -304,7 +304,7 @@ impl From<Kind> for UnaryOperator {
 /// <https://bedrock.dev/docs/stable/Molang#Conditionals>
 ///
 /// `q.foo ? 0 : 1`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TernaryExpression {
     pub span: Span,
     pub test: Expression,
@@ -315,7 +315,7 @@ pub struct TernaryExpression {
 /// <https://bedrock.dev/docs/stable/Molang#Conditionals>
 ///
 /// `q.foo ? 0`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ConditionalExpression {
     pub span: Span,
     pub test: Expression,
@@ -323,7 +323,7 @@ pub struct ConditionalExpression {
 }
 
 /// `v.a = 0;`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AssignmentExpression {
     pub span: Span,
     pub left: VariableExpression,
@@ -331,7 +331,7 @@ pub struct AssignmentExpression {
 }
 
 /// <https://bedrock.dev/docs/stable/Molang#Resource%20Expression>
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ResourceExpression {
     pub span: Span,
     pub section: ResourceSection,
@@ -374,7 +374,7 @@ impl From<Kind> for ResourceSection {
 /// <https://bedrock.dev/docs/stable/Molang#Array%20Expressions>
 ///
 /// `array.foo[0]`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ArrayAccessExpression {
     pub span: Span,
     pub name: IdentifierReference,
@@ -384,7 +384,7 @@ pub struct ArrayAccessExpression {
 /// <https://bedrock.dev/docs/stable/Molang#-%3E%20%20Arrow%20Operator>
 ///
 /// `v.foo->q.bar`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ArrowAccessExpression {
     pub span: Span,
     pub left: Expression,
@@ -395,7 +395,7 @@ pub struct ArrowAccessExpression {
 /// <https://bedrock.dev/docs/stable/Molang#Math%20Functions>
 ///
 /// `math.random(1, 2)` or `math.random`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CallExpression {
     pub span: Span,
     pub kind: CallKind,
@@ -435,7 +435,7 @@ pub enum CallKind {
 /// <https://bedrock.dev/docs/stable/Molang#loop>
 ///
 /// `loop(10, { v.x = v.x + 1; });`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LoopExpression {
     pub span: Span,
     pub count: Expression,
@@ -445,7 +445,7 @@ pub struct LoopExpression {
 /// <https://bedrock.dev/docs/stable/Molang#for_each>
 ///
 /// `for_each(t.foo, q.baz, { v.x = v.x + 1; });`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ForEachExpression {
     pub span: Span,
     pub variable: VariableExpression,
@@ -456,7 +456,7 @@ pub struct ForEachExpression {
 /// <https://bedrock.dev/docs/stable/Molang#break>
 ///
 /// `break` in `loop(10, { v.x = v.x + 1; (v.x > 20) ? break; });`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Break {
     pub span: Span,
 }
@@ -464,19 +464,19 @@ pub struct Break {
 /// <https://bedrock.dev/docs/stable/Molang#continue>
 ///
 /// `continue` in `loop(10, { (v.x > 5) ? continue; v.x = v.x + 1; });`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Continue {
     pub span: Span,
 }
 
 /// `this` in `q.foo(this)`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct This {
     pub span: Span,
 }
 
 /// `return` in `v.a = 1; return v.a;`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Return {
     pub span: Span,
     pub argument: Expression,
