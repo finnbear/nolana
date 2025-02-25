@@ -1,74 +1,59 @@
-use oxc_allocator::{Allocator, Box, IntoIn, Vec};
-
 use crate::{ast::*, span::Span};
 
 /// Builder for creating AST nodes.
 #[derive(Clone, Copy)]
-pub struct AstBuilder<'a> {
-    /// The arena allocator used to store AST nodes.
-    pub allocator: &'a Allocator,
-}
+pub struct AstBuilder {}
 
-impl<'a> AstBuilder<'a> {
+impl AstBuilder {
     #[inline]
-    pub fn new(allocator: &'a Allocator) -> Self {
-        Self { allocator }
+    pub fn new() -> Self {
+        Self {}
     }
 
     #[inline]
-    pub fn alloc<T>(self, value: T) -> Box<'a, T> {
-        Box::new_in(value, self.allocator)
+    pub fn alloc<T>(self, value: T) -> Box<T> {
+        Box::new(value)
     }
 
     #[inline]
-    pub fn vec<T>(self) -> Vec<'a, T> {
-        Vec::new_in(self.allocator)
+    pub fn vec<T>(self) -> Vec<T> {
+        Vec::new()
     }
 
     #[inline]
-    pub fn program(
-        self,
-        span: Span,
-        source: &'a str,
-        is_complex: bool,
-        body: Vec<'a, Expression<'a>>,
-    ) -> Program<'a> {
+    pub fn program(self, span: Span, is_complex: bool, body: Vec<Expression>) -> Program {
         Program {
             span,
-            source,
             is_complex,
             body,
         }
     }
 
     #[inline]
-    pub fn identifier_reference<S>(self, span: Span, name: S) -> IdentifierReference<'a>
+    pub fn identifier_reference<S>(self, span: Span, name: S) -> IdentifierReference
     where
-        S: IntoIn<'a, &'a str>,
+        S: Into<String>,
     {
         IdentifierReference {
             span,
-            name: name.into_in(self.allocator),
+            name: name.into(),
         }
     }
 
     #[inline]
-    pub fn expression_boolean_literal(self, span: Span, value: bool) -> Expression<'a> {
+    pub fn expression_boolean_literal(self, span: Span, value: bool) -> Expression {
         Expression::BooleanLiteral(self.alloc(self.boolean_literal(span, value)))
     }
 
     #[inline]
-    pub fn expression_numeric_literal<S>(self, span: Span, value: f32, raw: S) -> Expression<'a>
-    where
-        S: IntoIn<'a, &'a str>,
-    {
-        Expression::NumericLiteral(self.alloc(self.numeric_literal(span, value, raw)))
+    pub fn expression_numeric_literal(self, span: Span, value: f32) -> Expression {
+        Expression::NumericLiteral(self.alloc(self.numeric_literal(span, value)))
     }
 
     #[inline]
-    pub fn expression_string_literal<S>(self, span: Span, value: S) -> Expression<'a>
+    pub fn expression_string_literal<S>(self, span: Span, value: S) -> Expression
     where
-        S: IntoIn<'a, &'a str>,
+        S: Into<String>,
     {
         Expression::StringLiteral(self.alloc(self.string_literal(span, value)))
     }
@@ -78,17 +63,13 @@ impl<'a> AstBuilder<'a> {
         self,
         span: Span,
         lifetime: VariableLifetime,
-        member: VariableMember<'a>,
-    ) -> Expression<'a> {
+        member: VariableMember,
+    ) -> Expression {
         Expression::Variable(self.alloc(self.variable_expression(span, lifetime, member)))
     }
 
     #[inline]
-    pub fn expression_parenthesized_single(
-        self,
-        span: Span,
-        expression: Expression<'a>,
-    ) -> Expression<'a> {
+    pub fn expression_parenthesized_single(self, span: Span, expression: Expression) -> Expression {
         Expression::Parenthesized(
             self.alloc(self.parenthesized_single_expression(span, expression)),
         )
@@ -98,19 +79,15 @@ impl<'a> AstBuilder<'a> {
     pub fn expression_parenthesized_complex(
         self,
         span: Span,
-        expressions: Vec<'a, Expression<'a>>,
-    ) -> Expression<'a> {
+        expressions: Vec<Expression>,
+    ) -> Expression {
         Expression::Parenthesized(
             self.alloc(self.parenthesized_complex_expression(span, expressions)),
         )
     }
 
     #[inline]
-    pub fn expression_block(
-        self,
-        span: Span,
-        expressions: Vec<'a, Expression<'a>>,
-    ) -> Expression<'a> {
+    pub fn expression_block(self, span: Span, expressions: Vec<Expression>) -> Expression {
         Expression::Block(self.alloc(self.block_expression(span, expressions)))
     }
 
@@ -118,10 +95,10 @@ impl<'a> AstBuilder<'a> {
     pub fn expression_binary(
         self,
         span: Span,
-        left: Expression<'a>,
+        left: Expression,
         operator: BinaryOperator,
-        right: Expression<'a>,
-    ) -> Expression<'a> {
+        right: Expression,
+    ) -> Expression {
         Expression::Binary(self.alloc(self.binary_expression(span, left, operator, right)))
     }
 
@@ -130,8 +107,8 @@ impl<'a> AstBuilder<'a> {
         self,
         span: Span,
         operator: UnaryOperator,
-        argument: Expression<'a>,
-    ) -> Expression<'a> {
+        argument: Expression,
+    ) -> Expression {
         Expression::Unary(self.alloc(self.unary_expression(span, operator, argument)))
     }
 
@@ -139,10 +116,10 @@ impl<'a> AstBuilder<'a> {
     pub fn expression_ternary(
         self,
         span: Span,
-        test: Expression<'a>,
-        consequent: Expression<'a>,
-        alternate: Expression<'a>,
-    ) -> Expression<'a> {
+        test: Expression,
+        consequent: Expression,
+        alternate: Expression,
+    ) -> Expression {
         Expression::Ternary(self.alloc(self.ternary_expression(span, test, consequent, alternate)))
     }
 
@@ -150,9 +127,9 @@ impl<'a> AstBuilder<'a> {
     pub fn expression_conditional(
         self,
         span: Span,
-        test: Expression<'a>,
-        consequent: Expression<'a>,
-    ) -> Expression<'a> {
+        test: Expression,
+        consequent: Expression,
+    ) -> Expression {
         Expression::Conditional(self.alloc(self.conditional_expression(span, test, consequent)))
     }
 
@@ -160,9 +137,9 @@ impl<'a> AstBuilder<'a> {
     pub fn expression_assignment(
         self,
         span: Span,
-        left: VariableExpression<'a>,
-        right: Expression<'a>,
-    ) -> Expression<'a> {
+        left: VariableExpression,
+        right: Expression,
+    ) -> Expression {
         Expression::Assignment(self.alloc(self.assignment_expression(span, left, right)))
     }
 
@@ -171,8 +148,8 @@ impl<'a> AstBuilder<'a> {
         self,
         span: Span,
         section: ResourceSection,
-        name: IdentifierReference<'a>,
-    ) -> Expression<'a> {
+        name: IdentifierReference,
+    ) -> Expression {
         Expression::Resource(self.alloc(self.resource_expression(span, section, name)))
     }
 
@@ -180,9 +157,9 @@ impl<'a> AstBuilder<'a> {
     pub fn expression_array_access(
         self,
         span: Span,
-        name: IdentifierReference<'a>,
-        index: Expression<'a>,
-    ) -> Expression<'a> {
+        name: IdentifierReference,
+        index: Expression,
+    ) -> Expression {
         Expression::ArrayAccess(self.alloc(self.array_access_expression(span, name, index)))
     }
 
@@ -190,9 +167,9 @@ impl<'a> AstBuilder<'a> {
     pub fn expression_arrow_access(
         self,
         span: Span,
-        left: Expression<'a>,
-        right: Expression<'a>,
-    ) -> Expression<'a> {
+        left: Expression,
+        right: Expression,
+    ) -> Expression {
         Expression::ArrowAccess(self.alloc(self.arrow_access_expression(span, left, right)))
     }
 
@@ -201,9 +178,9 @@ impl<'a> AstBuilder<'a> {
         self,
         span: Span,
         kind: CallKind,
-        callee: IdentifierReference<'a>,
-        arguments: Option<Vec<'a, Expression<'a>>>,
-    ) -> Expression<'a> {
+        callee: IdentifierReference,
+        arguments: Option<Vec<Expression>>,
+    ) -> Expression {
         Expression::Call(self.alloc(self.call_expression(span, kind, callee, arguments)))
     }
 
@@ -211,9 +188,9 @@ impl<'a> AstBuilder<'a> {
     pub fn expression_loop(
         self,
         span: Span,
-        count: Expression<'a>,
-        expression: BlockExpression<'a>,
-    ) -> Expression<'a> {
+        count: Expression,
+        expression: BlockExpression,
+    ) -> Expression {
         Expression::Loop(self.alloc(self.loop_expression(span, count, expression)))
     }
 
@@ -221,30 +198,30 @@ impl<'a> AstBuilder<'a> {
     pub fn expression_for_each(
         self,
         span: Span,
-        variable: VariableExpression<'a>,
-        array: Expression<'a>,
-        expression: BlockExpression<'a>,
-    ) -> Expression<'a> {
+        variable: VariableExpression,
+        array: Expression,
+        expression: BlockExpression,
+    ) -> Expression {
         Expression::ForEach(self.alloc(self.for_each_expression(span, variable, array, expression)))
     }
 
     #[inline]
-    pub fn expression_break(self, span: Span) -> Expression<'a> {
+    pub fn expression_break(self, span: Span) -> Expression {
         Expression::Break(self.alloc(self.r#break(span)))
     }
 
     #[inline]
-    pub fn expression_continue(self, span: Span) -> Expression<'a> {
+    pub fn expression_continue(self, span: Span) -> Expression {
         Expression::Continue(self.alloc(self.r#continue(span)))
     }
 
     #[inline]
-    pub fn expression_this(self, span: Span) -> Expression<'a> {
+    pub fn expression_this(self, span: Span) -> Expression {
         Expression::This(self.alloc(self.this(span)))
     }
 
     #[inline]
-    pub fn expression_return(self, span: Span, argument: Expression<'a>) -> Expression<'a> {
+    pub fn expression_return(self, span: Span, argument: Expression) -> Expression {
         Expression::Return(self.alloc(self.r#return(span, argument)))
     }
 
@@ -254,25 +231,18 @@ impl<'a> AstBuilder<'a> {
     }
 
     #[inline]
-    pub fn numeric_literal<S>(self, span: Span, value: f32, raw: S) -> NumericLiteral<'a>
-    where
-        S: IntoIn<'a, &'a str>,
-    {
-        NumericLiteral {
-            span,
-            value,
-            raw: raw.into_in(self.allocator),
-        }
+    pub fn numeric_literal(self, span: Span, value: f32) -> NumericLiteral {
+        NumericLiteral { span, value }
     }
 
     #[inline]
-    pub fn string_literal<S>(self, span: Span, value: S) -> StringLiteral<'a>
+    pub fn string_literal<S>(self, span: Span, value: S) -> StringLiteral
     where
-        S: IntoIn<'a, &'a str>,
+        S: Into<String>,
     {
         StringLiteral {
             span,
-            value: value.into_in(self.allocator),
+            value: value.into(),
         }
     }
 
@@ -281,8 +251,8 @@ impl<'a> AstBuilder<'a> {
         self,
         span: Span,
         lifetime: VariableLifetime,
-        member: VariableMember<'a>,
-    ) -> VariableExpression<'a> {
+        member: VariableMember,
+    ) -> VariableExpression {
         VariableExpression {
             span,
             lifetime,
@@ -294,12 +264,12 @@ impl<'a> AstBuilder<'a> {
     pub fn variable_member_object(
         self,
         span: Span,
-        object: VariableMember<'a>,
-        property: IdentifierReference<'a>,
-    ) -> VariableMember<'a> {
+        object: VariableMember,
+        property: IdentifierReference,
+    ) -> VariableMember {
         VariableMember::Object {
             span,
-            object: object.into_in(self.allocator),
+            object: Box::new(object),
             property,
         }
     }
@@ -308,8 +278,8 @@ impl<'a> AstBuilder<'a> {
     pub fn variable_member_property(
         self,
         span: Span,
-        property: IdentifierReference<'a>,
-    ) -> VariableMember<'a> {
+        property: IdentifierReference,
+    ) -> VariableMember {
         VariableMember::Property { span, property }
     }
 
@@ -317,8 +287,8 @@ impl<'a> AstBuilder<'a> {
     pub fn parenthesized_single_expression(
         self,
         span: Span,
-        expression: Expression<'a>,
-    ) -> ParenthesizedExpression<'a> {
+        expression: Expression,
+    ) -> ParenthesizedExpression {
         ParenthesizedExpression::Single { span, expression }
     }
 
@@ -326,17 +296,13 @@ impl<'a> AstBuilder<'a> {
     pub fn parenthesized_complex_expression(
         self,
         span: Span,
-        expressions: Vec<'a, Expression<'a>>,
-    ) -> ParenthesizedExpression<'a> {
+        expressions: Vec<Expression>,
+    ) -> ParenthesizedExpression {
         ParenthesizedExpression::Complex { span, expressions }
     }
 
     #[inline]
-    pub fn block_expression(
-        self,
-        span: Span,
-        expressions: Vec<'a, Expression<'a>>,
-    ) -> BlockExpression<'a> {
+    pub fn block_expression(self, span: Span, expressions: Vec<Expression>) -> BlockExpression {
         BlockExpression { span, expressions }
     }
 
@@ -344,10 +310,10 @@ impl<'a> AstBuilder<'a> {
     pub fn binary_expression(
         self,
         span: Span,
-        left: Expression<'a>,
+        left: Expression,
         operator: BinaryOperator,
-        right: Expression<'a>,
-    ) -> BinaryExpression<'a> {
+        right: Expression,
+    ) -> BinaryExpression {
         BinaryExpression {
             span,
             left,
@@ -361,8 +327,8 @@ impl<'a> AstBuilder<'a> {
         self,
         span: Span,
         operator: UnaryOperator,
-        argument: Expression<'a>,
-    ) -> UnaryExpression<'a> {
+        argument: Expression,
+    ) -> UnaryExpression {
         UnaryExpression {
             span,
             operator,
@@ -374,10 +340,10 @@ impl<'a> AstBuilder<'a> {
     pub fn ternary_expression(
         self,
         span: Span,
-        test: Expression<'a>,
-        consequent: Expression<'a>,
-        alternate: Expression<'a>,
-    ) -> TernaryExpression<'a> {
+        test: Expression,
+        consequent: Expression,
+        alternate: Expression,
+    ) -> TernaryExpression {
         TernaryExpression {
             span,
             test,
@@ -390,9 +356,9 @@ impl<'a> AstBuilder<'a> {
     pub fn conditional_expression(
         self,
         span: Span,
-        test: Expression<'a>,
-        consequent: Expression<'a>,
-    ) -> ConditionalExpression<'a> {
+        test: Expression,
+        consequent: Expression,
+    ) -> ConditionalExpression {
         ConditionalExpression {
             span,
             test,
@@ -404,9 +370,9 @@ impl<'a> AstBuilder<'a> {
     pub fn assignment_expression(
         self,
         span: Span,
-        left: VariableExpression<'a>,
-        right: Expression<'a>,
-    ) -> AssignmentExpression<'a> {
+        left: VariableExpression,
+        right: Expression,
+    ) -> AssignmentExpression {
         AssignmentExpression { span, left, right }
     }
 
@@ -415,8 +381,8 @@ impl<'a> AstBuilder<'a> {
         self,
         span: Span,
         section: ResourceSection,
-        name: IdentifierReference<'a>,
-    ) -> ResourceExpression<'a> {
+        name: IdentifierReference,
+    ) -> ResourceExpression {
         ResourceExpression {
             span,
             section,
@@ -428,18 +394,18 @@ impl<'a> AstBuilder<'a> {
     pub fn array_access_expression(
         self,
         span: Span,
-        name: IdentifierReference<'a>,
-        index: Expression<'a>,
-    ) -> ArrayAccessExpression<'a> {
+        name: IdentifierReference,
+        index: Expression,
+    ) -> ArrayAccessExpression {
         ArrayAccessExpression { span, name, index }
     }
 
     pub fn arrow_access_expression(
         self,
         span: Span,
-        left: Expression<'a>,
-        right: Expression<'a>,
-    ) -> ArrowAccessExpression<'a> {
+        left: Expression,
+        right: Expression,
+    ) -> ArrowAccessExpression {
         ArrowAccessExpression { span, left, right }
     }
 
@@ -448,9 +414,9 @@ impl<'a> AstBuilder<'a> {
         self,
         span: Span,
         kind: CallKind,
-        callee: IdentifierReference<'a>,
-        arguments: Option<Vec<'a, Expression<'a>>>,
-    ) -> CallExpression<'a> {
+        callee: IdentifierReference,
+        arguments: Option<Vec<Expression>>,
+    ) -> CallExpression {
         CallExpression {
             span,
             kind,
@@ -463,9 +429,9 @@ impl<'a> AstBuilder<'a> {
     pub fn loop_expression(
         self,
         span: Span,
-        count: Expression<'a>,
-        expression: BlockExpression<'a>,
-    ) -> LoopExpression<'a> {
+        count: Expression,
+        expression: BlockExpression,
+    ) -> LoopExpression {
         LoopExpression {
             span,
             count,
@@ -477,10 +443,10 @@ impl<'a> AstBuilder<'a> {
     pub fn for_each_expression(
         self,
         span: Span,
-        variable: VariableExpression<'a>,
-        array: Expression<'a>,
-        expression: BlockExpression<'a>,
-    ) -> ForEachExpression<'a> {
+        variable: VariableExpression,
+        array: Expression,
+        expression: BlockExpression,
+    ) -> ForEachExpression {
         ForEachExpression {
             span,
             variable,
@@ -505,7 +471,7 @@ impl<'a> AstBuilder<'a> {
     }
 
     #[inline]
-    pub fn r#return(self, span: Span, argument: Expression<'a>) -> Return<'a> {
+    pub fn r#return(self, span: Span, argument: Expression) -> Return {
         Return { span, argument }
     }
 }

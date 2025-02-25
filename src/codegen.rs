@@ -14,7 +14,6 @@ pub struct Codegen {
 
 impl Codegen {
     pub fn build(mut self, program: &Program) -> String {
-        self.code.reserve(program.source.len());
         self.is_complex = program.is_complex;
         program.gen(&mut self);
         self.code
@@ -80,7 +79,7 @@ pub trait Gen {
     fn gen(&self, c: &mut Codegen);
 }
 
-impl Gen for Program<'_> {
+impl Gen for Program {
     fn gen(&self, c: &mut Codegen) {
         for expr in &self.body {
             expr.gen(c);
@@ -91,7 +90,7 @@ impl Gen for Program<'_> {
     }
 }
 
-impl Gen for Expression<'_> {
+impl Gen for Expression {
     fn gen(&self, c: &mut Codegen) {
         match self {
             Self::BooleanLiteral(expr) => expr.gen(c),
@@ -119,9 +118,9 @@ impl Gen for Expression<'_> {
     }
 }
 
-impl Gen for IdentifierReference<'_> {
+impl Gen for IdentifierReference {
     fn gen(&self, c: &mut Codegen) {
-        c.print_str(self.name);
+        c.print_str(&self.name);
     }
 }
 
@@ -131,21 +130,21 @@ impl Gen for BooleanLiteral {
     }
 }
 
-impl Gen for NumericLiteral<'_> {
+impl Gen for NumericLiteral {
     fn gen(&self, c: &mut Codegen) {
-        c.print_str(self.raw);
+        c.print_str(&self.value.to_string());
     }
 }
 
-impl Gen for StringLiteral<'_> {
+impl Gen for StringLiteral {
     fn gen(&self, c: &mut Codegen) {
         c.print_char('\'');
-        c.print_str(self.value);
+        c.print_str(&self.value);
         c.print_char('\'');
     }
 }
 
-impl Gen for VariableExpression<'_> {
+impl Gen for VariableExpression {
     fn gen(&self, c: &mut Codegen) {
         self.lifetime.gen(c);
         c.print_dot();
@@ -164,7 +163,7 @@ impl Gen for VariableLifetime {
     }
 }
 
-impl Gen for VariableMember<'_> {
+impl Gen for VariableMember {
     fn gen(&self, c: &mut Codegen) {
         match self {
             Self::Object {
@@ -181,7 +180,7 @@ impl Gen for VariableMember<'_> {
     }
 }
 
-impl Gen for ParenthesizedExpression<'_> {
+impl Gen for ParenthesizedExpression {
     fn gen(&self, c: &mut Codegen) {
         c.print_char('(');
         match self {
@@ -197,7 +196,7 @@ impl Gen for ParenthesizedExpression<'_> {
     }
 }
 
-impl Gen for BlockExpression<'_> {
+impl Gen for BlockExpression {
     fn gen(&self, c: &mut Codegen) {
         c.print_char('{');
         for expr in &self.expressions {
@@ -208,7 +207,7 @@ impl Gen for BlockExpression<'_> {
     }
 }
 
-impl Gen for BinaryExpression<'_> {
+impl Gen for BinaryExpression {
     fn gen(&self, c: &mut Codegen) {
         self.left.gen(c);
         c.print_space();
@@ -224,7 +223,7 @@ impl Gen for BinaryOperator {
     }
 }
 
-impl Gen for UnaryExpression<'_> {
+impl Gen for UnaryExpression {
     fn gen(&self, c: &mut Codegen) {
         self.operator.gen(c);
         self.argument.gen(c);
@@ -237,7 +236,7 @@ impl Gen for UnaryOperator {
     }
 }
 
-impl Gen for TernaryExpression<'_> {
+impl Gen for TernaryExpression {
     fn gen(&self, c: &mut Codegen) {
         self.test.gen(c);
         c.print_space();
@@ -251,7 +250,7 @@ impl Gen for TernaryExpression<'_> {
     }
 }
 
-impl Gen for ConditionalExpression<'_> {
+impl Gen for ConditionalExpression {
     fn gen(&self, c: &mut Codegen) {
         self.test.gen(c);
         c.print_space();
@@ -261,7 +260,7 @@ impl Gen for ConditionalExpression<'_> {
     }
 }
 
-impl Gen for AssignmentExpression<'_> {
+impl Gen for AssignmentExpression {
     fn gen(&self, c: &mut Codegen) {
         self.left.gen(c);
         c.print_space();
@@ -271,7 +270,7 @@ impl Gen for AssignmentExpression<'_> {
     }
 }
 
-impl Gen for ResourceExpression<'_> {
+impl Gen for ResourceExpression {
     fn gen(&self, c: &mut Codegen) {
         c.print_str(self.section.as_str());
         c.print_dot();
@@ -279,7 +278,7 @@ impl Gen for ResourceExpression<'_> {
     }
 }
 
-impl Gen for ArrayAccessExpression<'_> {
+impl Gen for ArrayAccessExpression {
     fn gen(&self, c: &mut Codegen) {
         c.print_str("array.");
         self.name.gen(c);
@@ -289,7 +288,7 @@ impl Gen for ArrayAccessExpression<'_> {
     }
 }
 
-impl Gen for ArrowAccessExpression<'_> {
+impl Gen for ArrowAccessExpression {
     fn gen(&self, c: &mut Codegen) {
         self.left.gen(c);
         c.print_str("->");
@@ -297,7 +296,7 @@ impl Gen for ArrowAccessExpression<'_> {
     }
 }
 
-impl Gen for CallExpression<'_> {
+impl Gen for CallExpression {
     fn gen(&self, c: &mut Codegen) {
         self.kind.gen(c);
         c.print_dot();
@@ -325,7 +324,7 @@ impl Gen for CallKind {
     }
 }
 
-impl Gen for LoopExpression<'_> {
+impl Gen for LoopExpression {
     fn gen(&self, c: &mut Codegen) {
         c.print_str("loop");
         c.print_char('(');
@@ -337,7 +336,7 @@ impl Gen for LoopExpression<'_> {
     }
 }
 
-impl Gen for ForEachExpression<'_> {
+impl Gen for ForEachExpression {
     fn gen(&self, c: &mut Codegen) {
         c.print_str("for_each");
         c.print_char('(');
@@ -364,7 +363,7 @@ impl Gen for Continue {
     }
 }
 
-impl Gen for Return<'_> {
+impl Gen for Return {
     fn gen(&self, c: &mut Codegen) {
         c.print_str("return ");
         self.argument.gen(c);

@@ -24,8 +24,8 @@ impl MolangStats {
     }
 }
 
-impl<'a> Visit<'a> for MolangStats {
-    fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
+impl<'a> Visit for MolangStats {
+    fn visit_call_expression(&mut self, it: &CallExpression) {
         match it.kind {
             CallKind::Math => self.math_functions += 1,
             CallKind::Query => self.queries += 1,

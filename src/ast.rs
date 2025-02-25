@@ -1,5 +1,3 @@
-use oxc_allocator::{Box, Vec};
-
 use crate::{span::Span, token::Kind};
 
 /// Untyped AST Node kind.
@@ -34,39 +32,38 @@ pub enum AstKind {
 /// Represents the root of a Molang expression AST, containing all the top-level
 /// information.
 #[derive(Debug)]
-pub struct Program<'a> {
+pub struct Program {
     pub span: Span,
-    pub source: &'a str,
     /// Determines whether the expression is complex or simple. If it contains
     /// at least one `;` or `=`, it is considered a complex expression.
     pub is_complex: bool,
-    pub body: Vec<'a, Expression<'a>>,
+    pub body: Vec<Expression>,
 }
 
 /// <https://bedrock.dev/docs/stable/Molang#Lexical%20Structure>
 #[derive(Debug)]
-pub enum Expression<'a> {
-    BooleanLiteral(Box<'a, BooleanLiteral>),
-    NumericLiteral(Box<'a, NumericLiteral<'a>>),
-    StringLiteral(Box<'a, StringLiteral<'a>>),
-    Variable(Box<'a, VariableExpression<'a>>),
-    Parenthesized(Box<'a, ParenthesizedExpression<'a>>),
-    Block(Box<'a, BlockExpression<'a>>),
-    Binary(Box<'a, BinaryExpression<'a>>),
-    Unary(Box<'a, UnaryExpression<'a>>),
-    Ternary(Box<'a, TernaryExpression<'a>>),
-    Conditional(Box<'a, ConditionalExpression<'a>>),
-    Assignment(Box<'a, AssignmentExpression<'a>>),
-    Resource(Box<'a, ResourceExpression<'a>>),
-    ArrayAccess(Box<'a, ArrayAccessExpression<'a>>),
-    ArrowAccess(Box<'a, ArrowAccessExpression<'a>>),
-    Call(Box<'a, CallExpression<'a>>),
-    Loop(Box<'a, LoopExpression<'a>>),
-    ForEach(Box<'a, ForEachExpression<'a>>),
-    Break(Box<'a, Break>),
-    Continue(Box<'a, Continue>),
-    This(Box<'a, This>),
-    Return(Box<'a, Return<'a>>),
+pub enum Expression {
+    BooleanLiteral(Box<BooleanLiteral>),
+    NumericLiteral(Box<NumericLiteral>),
+    StringLiteral(Box<StringLiteral>),
+    Variable(Box<VariableExpression>),
+    Parenthesized(Box<ParenthesizedExpression>),
+    Block(Box<BlockExpression>),
+    Binary(Box<BinaryExpression>),
+    Unary(Box<UnaryExpression>),
+    Ternary(Box<TernaryExpression>),
+    Conditional(Box<ConditionalExpression>),
+    Assignment(Box<AssignmentExpression>),
+    Resource(Box<ResourceExpression>),
+    ArrayAccess(Box<ArrayAccessExpression>),
+    ArrowAccess(Box<ArrowAccessExpression>),
+    Call(Box<CallExpression>),
+    Loop(Box<LoopExpression>),
+    ForEach(Box<ForEachExpression>),
+    Break(Box<Break>),
+    Continue(Box<Continue>),
+    This(Box<This>),
+    Return(Box<Return>),
 }
 
 /// `true` or `false`
@@ -89,34 +86,33 @@ impl BooleanLiteral {
 
 /// `1.23` in `v.a = 1.23;`
 #[derive(Debug)]
-pub struct NumericLiteral<'a> {
+pub struct NumericLiteral {
     pub span: Span,
     pub value: f32,
-    pub raw: &'a str,
 }
 
 /// <https://bedrock.dev/docs/stable/Molang#Strings>
 ///
 /// `'foo bar'` in `v.a = 'foo bar';`
 #[derive(Debug)]
-pub struct StringLiteral<'a> {
+pub struct StringLiteral {
     pub span: Span,
-    pub value: &'a str,
+    pub value: String,
 }
 
 /// `foo` in `v.foo.bar`
 #[derive(Debug)]
-pub struct IdentifierReference<'a> {
+pub struct IdentifierReference {
     pub span: Span,
-    pub name: &'a str,
+    pub name: String,
 }
 
 /// <https://bedrock.dev/docs/stable/Molang#Variables>
 #[derive(Debug)]
-pub struct VariableExpression<'a> {
+pub struct VariableExpression {
     pub span: Span,
     pub lifetime: VariableLifetime,
-    pub member: VariableMember<'a>,
+    pub member: VariableMember,
 }
 
 /// The variable lifetime associated with [`VariableExpression`].
@@ -154,48 +150,45 @@ impl From<Kind> for VariableLifetime {
 
 /// <https://bedrock.dev/docs/stable/Molang#Structs>
 #[derive(Debug)]
-pub enum VariableMember<'a> {
+pub enum VariableMember {
     /// `foo.bar` in `v.foo.bar`
     Object {
         span: Span,
-        object: Box<'a, VariableMember<'a>>,
-        property: IdentifierReference<'a>,
+        object: Box<VariableMember>,
+        property: IdentifierReference,
     },
     /// `foo` in `v.foo`
     Property {
         span: Span,
-        property: IdentifierReference<'a>,
+        property: IdentifierReference,
     },
 }
 
 #[derive(Debug)]
-pub enum ParenthesizedExpression<'a> {
+pub enum ParenthesizedExpression {
     /// `(1 + 1)` in `(1 + 1) * 2`
-    Single {
-        span: Span,
-        expression: Expression<'a>,
-    },
+    Single { span: Span, expression: Expression },
     /// `(v.a = 1;)` in `(v.b = 'B'; v.a = 1;);`
     Complex {
         span: Span,
-        expressions: Vec<'a, Expression<'a>>,
+        expressions: Vec<Expression>,
     },
 }
 
 /// `{ v.a = 0; }` in `loop(10, { v.a = 0; })`
 #[derive(Debug)]
-pub struct BlockExpression<'a> {
+pub struct BlockExpression {
     pub span: Span,
-    pub expressions: Vec<'a, Expression<'a>>,
+    pub expressions: Vec<Expression>,
 }
 
 /// `1 + 1` in `v.a = 1 + 1;`
 #[derive(Debug)]
-pub struct BinaryExpression<'a> {
+pub struct BinaryExpression {
     pub span: Span,
-    pub left: Expression<'a>,
+    pub left: Expression,
     pub operator: BinaryOperator,
-    pub right: Expression<'a>,
+    pub right: Expression,
 }
 
 /// Operators used in [`BinaryExpression`].
@@ -273,10 +266,10 @@ impl From<Kind> for BinaryOperator {
 
 /// `-1` in `q.foo(-1)`
 #[derive(Debug)]
-pub struct UnaryExpression<'a> {
+pub struct UnaryExpression {
     pub span: Span,
     pub operator: UnaryOperator,
-    pub argument: Expression<'a>,
+    pub argument: Expression,
 }
 
 /// Operators used in [`UnaryExpression`].
@@ -312,37 +305,37 @@ impl From<Kind> for UnaryOperator {
 ///
 /// `q.foo ? 0 : 1`
 #[derive(Debug)]
-pub struct TernaryExpression<'a> {
+pub struct TernaryExpression {
     pub span: Span,
-    pub test: Expression<'a>,
-    pub consequent: Expression<'a>,
-    pub alternate: Expression<'a>,
+    pub test: Expression,
+    pub consequent: Expression,
+    pub alternate: Expression,
 }
 
 /// <https://bedrock.dev/docs/stable/Molang#Conditionals>
 ///
 /// `q.foo ? 0`
 #[derive(Debug)]
-pub struct ConditionalExpression<'a> {
+pub struct ConditionalExpression {
     pub span: Span,
-    pub test: Expression<'a>,
-    pub consequent: Expression<'a>,
+    pub test: Expression,
+    pub consequent: Expression,
 }
 
 /// `v.a = 0;`
 #[derive(Debug)]
-pub struct AssignmentExpression<'a> {
+pub struct AssignmentExpression {
     pub span: Span,
-    pub left: VariableExpression<'a>,
-    pub right: Expression<'a>,
+    pub left: VariableExpression,
+    pub right: Expression,
 }
 
 /// <https://bedrock.dev/docs/stable/Molang#Resource%20Expression>
 #[derive(Debug)]
-pub struct ResourceExpression<'a> {
+pub struct ResourceExpression {
     pub span: Span,
     pub section: ResourceSection,
-    pub name: IdentifierReference<'a>,
+    pub name: IdentifierReference,
 }
 
 /// The resource section in [`ResourceExpression`].
@@ -382,20 +375,20 @@ impl From<Kind> for ResourceSection {
 ///
 /// `array.foo[0]`
 #[derive(Debug)]
-pub struct ArrayAccessExpression<'a> {
+pub struct ArrayAccessExpression {
     pub span: Span,
-    pub name: IdentifierReference<'a>,
-    pub index: Expression<'a>,
+    pub name: IdentifierReference,
+    pub index: Expression,
 }
 
 /// <https://bedrock.dev/docs/stable/Molang#-%3E%20%20Arrow%20Operator>
 ///
 /// `v.foo->q.bar`
 #[derive(Debug)]
-pub struct ArrowAccessExpression<'a> {
+pub struct ArrowAccessExpression {
     pub span: Span,
-    pub left: Expression<'a>,
-    pub right: Expression<'a>,
+    pub left: Expression,
+    pub right: Expression,
 }
 
 /// <https://bedrock.dev/docs/stable/Molang#Lexical%20Structure>
@@ -403,11 +396,11 @@ pub struct ArrowAccessExpression<'a> {
 ///
 /// `math.random(1, 2)` or `math.random`
 #[derive(Debug)]
-pub struct CallExpression<'a> {
+pub struct CallExpression {
     pub span: Span,
     pub kind: CallKind,
-    pub callee: IdentifierReference<'a>,
-    pub arguments: Option<Vec<'a, Expression<'a>>>,
+    pub callee: IdentifierReference,
+    pub arguments: Option<Vec<Expression>>,
 }
 
 impl CallKind {
@@ -443,21 +436,21 @@ pub enum CallKind {
 ///
 /// `loop(10, { v.x = v.x + 1; });`
 #[derive(Debug)]
-pub struct LoopExpression<'a> {
+pub struct LoopExpression {
     pub span: Span,
-    pub count: Expression<'a>,
-    pub expression: BlockExpression<'a>,
+    pub count: Expression,
+    pub expression: BlockExpression,
 }
 
 /// <https://bedrock.dev/docs/stable/Molang#for_each>
 ///
 /// `for_each(t.foo, q.baz, { v.x = v.x + 1; });`
 #[derive(Debug)]
-pub struct ForEachExpression<'a> {
+pub struct ForEachExpression {
     pub span: Span,
-    pub variable: VariableExpression<'a>,
-    pub array: Expression<'a>,
-    pub expression: BlockExpression<'a>,
+    pub variable: VariableExpression,
+    pub array: Expression,
+    pub expression: BlockExpression,
 }
 
 /// <https://bedrock.dev/docs/stable/Molang#break>
@@ -484,7 +477,7 @@ pub struct This {
 
 /// `return` in `v.a = 1; return v.a;`
 #[derive(Debug)]
-pub struct Return<'a> {
+pub struct Return {
     pub span: Span,
-    pub argument: Expression<'a>,
+    pub argument: Expression,
 }

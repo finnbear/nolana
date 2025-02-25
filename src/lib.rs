@@ -10,6 +10,3 @@ pub mod span;
 mod token;
 pub mod visit;
 pub mod visit_mut;
-pub mod allocator {
-    pub use oxc_allocator::*;
-}

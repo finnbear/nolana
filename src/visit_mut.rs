@@ -1,11 +1,9 @@
-use oxc_allocator::Vec;
-
 use crate::ast::*;
 
 use walk_mut::*;
 
 /// Syntax tree traversal.
-pub trait VisitMut<'a>: Sized {
+pub trait VisitMut: Sized {
     #[inline]
     #[allow(unused_variables)]
     fn enter_node(&mut self, kind: AstKind) {}
@@ -15,22 +13,22 @@ pub trait VisitMut<'a>: Sized {
     fn leave_node(&mut self, kind: AstKind) {}
 
     #[inline]
-    fn visit_program(&mut self, it: &mut Program<'a>) {
+    fn visit_program(&mut self, it: &mut Program) {
         walk_program(self, it);
     }
 
     #[inline]
-    fn visit_expressions(&mut self, it: &mut Vec<'a, Expression<'a>>) {
+    fn visit_expressions(&mut self, it: &mut Vec<Expression>) {
         walk_expressions(self, it);
     }
 
     #[inline]
-    fn visit_expression(&mut self, it: &mut Expression<'a>) {
+    fn visit_expression(&mut self, it: &mut Expression) {
         walk_expression(self, it);
     }
 
     #[inline]
-    fn visit_identifier_reference(&mut self, it: &mut IdentifierReference<'a>) {
+    fn visit_identifier_reference(&mut self, it: &mut IdentifierReference) {
         walk_identifier_reference(self, it)
     }
 
@@ -40,87 +38,87 @@ pub trait VisitMut<'a>: Sized {
     }
 
     #[inline]
-    fn visit_numeric_literal(&mut self, it: &mut NumericLiteral<'a>) {
+    fn visit_numeric_literal(&mut self, it: &mut NumericLiteral) {
         walk_numeric_literal(self, it);
     }
 
     #[inline]
-    fn visit_string_literal(&mut self, it: &mut StringLiteral<'a>) {
+    fn visit_string_literal(&mut self, it: &mut StringLiteral) {
         walk_string_literal(self, it);
     }
 
     #[inline]
-    fn visit_variable_expression(&mut self, it: &mut VariableExpression<'a>) {
+    fn visit_variable_expression(&mut self, it: &mut VariableExpression) {
         walk_variable_expression(self, it);
     }
 
     #[inline]
-    fn visit_variable_member(&mut self, it: &mut VariableMember<'a>) {
+    fn visit_variable_member(&mut self, it: &mut VariableMember) {
         walk_variable_member(self, it);
     }
 
     #[inline]
-    fn visit_parenthesized_expression(&mut self, it: &mut ParenthesizedExpression<'a>) {
+    fn visit_parenthesized_expression(&mut self, it: &mut ParenthesizedExpression) {
         walk_parenthesized_expression(self, it);
     }
 
     #[inline]
-    fn visit_block_expression(&mut self, it: &mut BlockExpression<'a>) {
+    fn visit_block_expression(&mut self, it: &mut BlockExpression) {
         walk_block_expression(self, it);
     }
 
     #[inline]
-    fn visit_binary_expression(&mut self, it: &mut BinaryExpression<'a>) {
+    fn visit_binary_expression(&mut self, it: &mut BinaryExpression) {
         walk_binary_expression(self, it);
     }
 
     #[inline]
-    fn visit_unary_expression(&mut self, it: &mut UnaryExpression<'a>) {
+    fn visit_unary_expression(&mut self, it: &mut UnaryExpression) {
         walk_unary_expression(self, it);
     }
 
     #[inline]
-    fn visit_ternary_expression(&mut self, it: &mut TernaryExpression<'a>) {
+    fn visit_ternary_expression(&mut self, it: &mut TernaryExpression) {
         walk_ternary_expression(self, it);
     }
 
     #[inline]
-    fn visit_conditional_expression(&mut self, it: &mut ConditionalExpression<'a>) {
+    fn visit_conditional_expression(&mut self, it: &mut ConditionalExpression) {
         walk_conditional_expression(self, it);
     }
 
     #[inline]
-    fn visit_assignment_expression(&mut self, it: &mut AssignmentExpression<'a>) {
+    fn visit_assignment_expression(&mut self, it: &mut AssignmentExpression) {
         walk_assignment_expression(self, it);
     }
 
     #[inline]
-    fn visit_resource_expression(&mut self, it: &mut ResourceExpression<'a>) {
+    fn visit_resource_expression(&mut self, it: &mut ResourceExpression) {
         walk_resource_expression(self, it);
     }
 
     #[inline]
-    fn visit_array_access_expression(&mut self, it: &mut ArrayAccessExpression<'a>) {
+    fn visit_array_access_expression(&mut self, it: &mut ArrayAccessExpression) {
         walk_array_access_expression(self, it);
     }
 
     #[inline]
-    fn visit_arrow_access_expression(&mut self, it: &mut ArrowAccessExpression<'a>) {
+    fn visit_arrow_access_expression(&mut self, it: &mut ArrowAccessExpression) {
         walk_arrow_access_expression(self, it);
     }
 
     #[inline]
-    fn visit_call_expression(&mut self, it: &mut CallExpression<'a>) {
+    fn visit_call_expression(&mut self, it: &mut CallExpression) {
         walk_call_expression(self, it);
     }
 
     #[inline]
-    fn visit_loop_expression(&mut self, it: &mut LoopExpression<'a>) {
+    fn visit_loop_expression(&mut self, it: &mut LoopExpression) {
         walk_loop_expression(self, it);
     }
 
     #[inline]
-    fn visit_for_each_expression(&mut self, it: &mut ForEachExpression<'a>) {
+    fn visit_for_each_expression(&mut self, it: &mut ForEachExpression) {
         walk_for_each_expression(self, it);
     }
 
@@ -140,7 +138,7 @@ pub trait VisitMut<'a>: Sized {
     }
 
     #[inline]
-    fn visit_return(&mut self, it: &mut Return<'a>) {
+    fn visit_return(&mut self, it: &mut Return) {
         walk_return(self, it);
     }
 }
@@ -149,7 +147,7 @@ pub mod walk_mut {
     use super::*;
 
     #[inline]
-    pub fn walk_program<'a>(visitor: &mut impl VisitMut<'a>, it: &mut Program<'a>) {
+    pub fn walk_program<'a>(visitor: &mut impl VisitMut, it: &mut Program) {
         let kind = AstKind::Program;
         visitor.enter_node(kind);
         visitor.visit_expressions(&mut it.body);
@@ -157,14 +155,14 @@ pub mod walk_mut {
     }
 
     #[inline]
-    pub fn walk_expressions<'a>(visitor: &mut impl VisitMut<'a>, it: &mut Vec<'a, Expression<'a>>) {
+    pub fn walk_expressions<'a>(visitor: &mut impl VisitMut, it: &mut Vec<Expression>) {
         for expr in it.iter_mut() {
             visitor.visit_expression(expr);
         }
     }
 
     #[inline]
-    pub fn walk_expression<'a>(visitor: &mut impl VisitMut<'a>, it: &mut Expression<'a>) {
+    pub fn walk_expression(visitor: &mut impl VisitMut, it: &mut Expression) {
         match it {
             Expression::BooleanLiteral(it) => visitor.visit_boolean_literal(it),
             Expression::NumericLiteral(it) => visitor.visit_numeric_literal(it),
@@ -193,8 +191,8 @@ pub mod walk_mut {
     #[inline]
     #[allow(unused_variables)]
     pub fn walk_identifier_reference<'a>(
-        visitor: &mut impl VisitMut<'a>,
-        it: &mut IdentifierReference<'a>,
+        visitor: &mut impl VisitMut,
+        it: &mut IdentifierReference,
     ) {
         let kind = AstKind::IdentifierReference;
         visitor.enter_node(kind);
@@ -203,7 +201,7 @@ pub mod walk_mut {
 
     #[inline]
     #[allow(unused_variables)]
-    pub fn walk_boolean_literal<'a>(visitor: &mut impl VisitMut<'a>, it: &mut BooleanLiteral) {
+    pub fn walk_boolean_literal<'a>(visitor: &mut impl VisitMut, it: &mut BooleanLiteral) {
         let kind = AstKind::BooleanLiteral;
         visitor.enter_node(kind);
         visitor.leave_node(kind);
@@ -211,7 +209,7 @@ pub mod walk_mut {
 
     #[inline]
     #[allow(unused_variables)]
-    pub fn walk_numeric_literal<'a>(visitor: &mut impl VisitMut<'a>, it: &mut NumericLiteral<'a>) {
+    pub fn walk_numeric_literal<'a>(visitor: &mut impl VisitMut, it: &mut NumericLiteral) {
         let kind = AstKind::NumericLiteral;
         visitor.enter_node(kind);
         visitor.leave_node(kind);
@@ -219,17 +217,14 @@ pub mod walk_mut {
 
     #[inline]
     #[allow(unused_variables)]
-    pub fn walk_string_literal<'a>(visitor: &mut impl VisitMut<'a>, it: &mut StringLiteral<'a>) {
+    pub fn walk_string_literal<'a>(visitor: &mut impl VisitMut, it: &mut StringLiteral) {
         let kind = AstKind::StringLiteral;
         visitor.enter_node(kind);
         visitor.leave_node(kind);
     }
 
     #[inline]
-    pub fn walk_variable_expression<'a>(
-        visitor: &mut impl VisitMut<'a>,
-        it: &mut VariableExpression<'a>,
-    ) {
+    pub fn walk_variable_expression(visitor: &mut impl VisitMut, it: &mut VariableExpression) {
         let kind = AstKind::VariableExpression;
         visitor.enter_node(kind);
         visitor.visit_variable_member(&mut it.member);
@@ -237,7 +232,7 @@ pub mod walk_mut {
     }
 
     #[inline]
-    pub fn walk_variable_member<'a>(visitor: &mut impl VisitMut<'a>, it: &mut VariableMember<'a>) {
+    pub fn walk_variable_member<'a>(visitor: &mut impl VisitMut, it: &mut VariableMember) {
         let kind = AstKind::VariableMember;
         visitor.enter_node(kind);
         match it {
@@ -255,9 +250,9 @@ pub mod walk_mut {
     }
 
     #[inline]
-    pub fn walk_parenthesized_expression<'a>(
-        visitor: &mut impl VisitMut<'a>,
-        it: &mut ParenthesizedExpression<'a>,
+    pub fn walk_parenthesized_expression(
+        visitor: &mut impl VisitMut,
+        it: &mut ParenthesizedExpression,
     ) {
         let kind = AstKind::ParenthesizedExpression;
         visitor.enter_node(kind);
@@ -273,10 +268,7 @@ pub mod walk_mut {
     }
 
     #[inline]
-    pub fn walk_block_expression<'a>(
-        visitor: &mut impl VisitMut<'a>,
-        it: &mut BlockExpression<'a>,
-    ) {
+    pub fn walk_block_expression(visitor: &mut impl VisitMut, it: &mut BlockExpression) {
         let kind = AstKind::BlockExpression;
         visitor.enter_node(kind);
         visitor.visit_expressions(&mut it.expressions);
@@ -284,10 +276,7 @@ pub mod walk_mut {
     }
 
     #[inline]
-    pub fn walk_binary_expression<'a>(
-        visitor: &mut impl VisitMut<'a>,
-        it: &mut BinaryExpression<'a>,
-    ) {
+    pub fn walk_binary_expression(visitor: &mut impl VisitMut, it: &mut BinaryExpression) {
         let kind = AstKind::BinaryExpression;
         visitor.enter_node(kind);
         visitor.visit_expression(&mut it.left);
@@ -296,10 +285,7 @@ pub mod walk_mut {
     }
 
     #[inline]
-    pub fn walk_unary_expression<'a>(
-        visitor: &mut impl VisitMut<'a>,
-        it: &mut UnaryExpression<'a>,
-    ) {
+    pub fn walk_unary_expression(visitor: &mut impl VisitMut, it: &mut UnaryExpression) {
         let kind = AstKind::UnaryExpression;
         visitor.enter_node(kind);
         visitor.visit_expression(&mut it.argument);
@@ -307,10 +293,7 @@ pub mod walk_mut {
     }
 
     #[inline]
-    pub fn walk_ternary_expression<'a>(
-        visitor: &mut impl VisitMut<'a>,
-        it: &mut TernaryExpression<'a>,
-    ) {
+    pub fn walk_ternary_expression(visitor: &mut impl VisitMut, it: &mut TernaryExpression) {
         let kind = AstKind::TernaryExpression;
         visitor.enter_node(kind);
         visitor.visit_expression(&mut it.test);
@@ -320,9 +303,9 @@ pub mod walk_mut {
     }
 
     #[inline]
-    pub fn walk_conditional_expression<'a>(
-        visitor: &mut impl VisitMut<'a>,
-        it: &mut ConditionalExpression<'a>,
+    pub fn walk_conditional_expression(
+        visitor: &mut impl VisitMut,
+        it: &mut ConditionalExpression,
     ) {
         let kind = AstKind::ConditionalExpression;
         visitor.enter_node(kind);
@@ -332,10 +315,7 @@ pub mod walk_mut {
     }
 
     #[inline]
-    pub fn walk_assignment_expression<'a>(
-        visitor: &mut impl VisitMut<'a>,
-        it: &mut AssignmentExpression<'a>,
-    ) {
+    pub fn walk_assignment_expression(visitor: &mut impl VisitMut, it: &mut AssignmentExpression) {
         let kind = AstKind::AssignmentExpression;
         visitor.enter_node(kind);
         visitor.visit_variable_expression(&mut it.left);
@@ -344,10 +324,7 @@ pub mod walk_mut {
     }
 
     #[inline]
-    pub fn walk_resource_expression<'a>(
-        visitor: &mut impl VisitMut<'a>,
-        it: &mut ResourceExpression<'a>,
-    ) {
+    pub fn walk_resource_expression(visitor: &mut impl VisitMut, it: &mut ResourceExpression) {
         let kind = AstKind::ResourceExpression;
         visitor.enter_node(kind);
         visitor.visit_identifier_reference(&mut it.name);
@@ -355,9 +332,9 @@ pub mod walk_mut {
     }
 
     #[inline]
-    pub fn walk_array_access_expression<'a>(
-        visitor: &mut impl VisitMut<'a>,
-        it: &mut ArrayAccessExpression<'a>,
+    pub fn walk_array_access_expression(
+        visitor: &mut impl VisitMut,
+        it: &mut ArrayAccessExpression,
     ) {
         let kind = AstKind::ArrayAccessExpression;
         visitor.enter_node(kind);
@@ -367,9 +344,9 @@ pub mod walk_mut {
     }
 
     #[inline]
-    pub fn walk_arrow_access_expression<'a>(
-        visitor: &mut impl VisitMut<'a>,
-        it: &mut ArrowAccessExpression<'a>,
+    pub fn walk_arrow_access_expression(
+        visitor: &mut impl VisitMut,
+        it: &mut ArrowAccessExpression,
     ) {
         let kind = AstKind::ArrowAccessExpression;
         visitor.enter_node(kind);
@@ -379,7 +356,7 @@ pub mod walk_mut {
     }
 
     #[inline]
-    pub fn walk_call_expression<'a>(visitor: &mut impl VisitMut<'a>, it: &mut CallExpression<'a>) {
+    pub fn walk_call_expression(visitor: &mut impl VisitMut, it: &mut CallExpression) {
         let kind = AstKind::CallExpression;
         visitor.enter_node(kind);
         visitor.visit_identifier_reference(&mut it.callee);
@@ -390,7 +367,7 @@ pub mod walk_mut {
     }
 
     #[inline]
-    pub fn walk_loop_expression<'a>(visitor: &mut impl VisitMut<'a>, it: &mut LoopExpression<'a>) {
+    pub fn walk_loop_expression(visitor: &mut impl VisitMut, it: &mut LoopExpression) {
         let kind = AstKind::LoopExpression;
         visitor.enter_node(kind);
         visitor.visit_expression(&mut it.count);
@@ -399,10 +376,7 @@ pub mod walk_mut {
     }
 
     #[inline]
-    pub fn walk_for_each_expression<'a>(
-        visitor: &mut impl VisitMut<'a>,
-        it: &mut ForEachExpression<'a>,
-    ) {
+    pub fn walk_for_each_expression(visitor: &mut impl VisitMut, it: &mut ForEachExpression) {
         let kind = AstKind::ForEachExpression;
         visitor.enter_node(kind);
         visitor.visit_variable_expression(&mut it.variable);
@@ -413,7 +387,7 @@ pub mod walk_mut {
 
     #[inline]
     #[allow(unused_variables)]
-    pub fn walk_break<'a>(visitor: &mut impl VisitMut<'a>, it: &mut Break) {
+    pub fn walk_break<'a>(visitor: &mut impl VisitMut, it: &mut Break) {
         let kind = AstKind::Break;
         visitor.enter_node(kind);
         visitor.leave_node(kind);
@@ -421,7 +395,7 @@ pub mod walk_mut {
 
     #[inline]
     #[allow(unused_variables)]
-    pub fn walk_continue<'a>(visitor: &mut impl VisitMut<'a>, it: &mut Continue) {
+    pub fn walk_continue<'a>(visitor: &mut impl VisitMut, it: &mut Continue) {
         let kind = AstKind::Continue;
         visitor.enter_node(kind);
         visitor.leave_node(kind);
@@ -429,14 +403,14 @@ pub mod walk_mut {
 
     #[inline]
     #[allow(unused_variables)]
-    pub fn walk_this<'a>(visitor: &mut impl VisitMut<'a>, it: &mut This) {
+    pub fn walk_this<'a>(visitor: &mut impl VisitMut, it: &mut This) {
         let kind = AstKind::This;
         visitor.enter_node(kind);
         visitor.leave_node(kind);
     }
 
     #[inline]
-    pub fn walk_return<'a>(visitor: &mut impl VisitMut<'a>, it: &mut Return<'a>) {
+    pub fn walk_return<'a>(visitor: &mut impl VisitMut, it: &mut Return) {
         let kind = AstKind::Return;
         visitor.enter_node(kind);
         visitor.visit_expression(&mut it.argument);

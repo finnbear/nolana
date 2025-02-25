@@ -24,7 +24,7 @@ impl SemanticChecker {
     }
 }
 
-impl<'a> Visit<'a> for SemanticChecker {
+impl<'a> Visit for SemanticChecker {
     fn enter_node(&mut self, kind: AstKind) {
         if Self::in_loop(kind) {
             self.loop_depth += 1;
@@ -37,14 +37,14 @@ impl<'a> Visit<'a> for SemanticChecker {
         }
     }
 
-    fn visit_block_expression(&mut self, it: &BlockExpression<'a>) {
+    fn visit_block_expression(&mut self, it: &BlockExpression) {
         if it.expressions.is_empty() {
             self.errors.push(errors::empty_block_expression(it.span));
         }
         walk_block_expression(self, it);
     }
 
-    fn visit_binary_expression(&mut self, it: &BinaryExpression<'a>) {
+    fn visit_binary_expression(&mut self, it: &BinaryExpression) {
         use BinaryOperator::*;
         use Expression::*;
         match (&it.left, it.operator, &it.right) {
@@ -60,7 +60,7 @@ impl<'a> Visit<'a> for SemanticChecker {
         walk_binary_expression(self, it);
     }
 
-    fn visit_assignment_expression(&mut self, it: &AssignmentExpression<'a>) {
+    fn visit_assignment_expression(&mut self, it: &AssignmentExpression) {
         if it.left.lifetime == VariableLifetime::Context {
             self.errors.push(errors::assigning_context(it.span))
         }
